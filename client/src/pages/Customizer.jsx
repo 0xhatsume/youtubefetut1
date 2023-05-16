@@ -15,11 +15,14 @@ const Customizer = () => {
 
   const [file, setFile] = useState('');
 
+  const [prompt, setPrompt] = useState('');
+  const [generatingImg, setGeneratingImg] = useState(false);
+
   const [activeEditorTab, setActiveEditorTab] = useState("");
   const [activeFilterTab, setActiveFilterTab] = useState({
     logoShirt: true,
     stylishShirt: false,
-  });
+  })
 
   // show tab content depending on the activeTab
   const generateTabContent = () => {
@@ -27,13 +30,18 @@ const Customizer = () => {
       case "colorpicker":
         return <ColorPicker />
       case "filepicker":
-        return <FilePicker 
+        return <FilePicker
           file={file}
           setFile={setFile}
           readFile={readFile}
         />
       case "aipicker":
-        return <AIPicker />
+        return <AIPicker 
+          prompt={prompt}
+          setPrompt={setPrompt}
+          generatingImg={generatingImg}
+          handleSubmit={handleSubmit}
+        />
       default:
         return null;
     }
@@ -60,6 +68,8 @@ const Customizer = () => {
       handleDecals(type, `data:image/png;base64,${data.photo}`)
     } catch (error) {
       alert(error)
+      setGeneratingImg(false);
+      setActiveEditorTab("");
     } finally {
       setGeneratingImg(false);
       setActiveEditorTab("");
@@ -90,9 +100,9 @@ const Customizer = () => {
         break;
     }
 
-  // after setting the state, activeFilterTab is updated
+    // after setting the state, activeFilterTab is updated
 
-  setActiveFilterTab((prevState) => {
+    setActiveFilterTab((prevState) => {
       return {
         ...prevState,
         [tabName]: !prevState[tabName]
@@ -106,35 +116,37 @@ const Customizer = () => {
         handleDecals(type, result);
         setActiveEditorTab("");
       })
-    }
+  }
 
   return (
     <AnimatePresence>
       {!snap.intro && (
         <>
-          <motion.div 
+          <motion.div
             key="custom"
             className="absolute top-0 left-0 z-10"
-          {...slideAnimation('left')}
+            {...slideAnimation('left')}
           >
             <div className="flex items-center min-h-screen">
               <div className="editortabs-container tabs">
                 {EditorTabs.map((tab) => (
-                  <Tab
+                  <Tab 
                     key={tab.name}
                     tab={tab}
-                    handleClick={()=>setActiveEditorTab(tab.name)}
+                    handleClick={() => setActiveEditorTab(tab.name)}
                   />
                 ))}
+
                 {generateTabContent()}
               </div>
             </div>
           </motion.div>
 
-          <motion.div className="absolute z-10 top-5 right-5"
+          <motion.div
+            className="absolute z-10 top-5 right-5"
             {...fadeAnimation}
           >
-            <CustomButton
+            <CustomButton 
               type="filled"
               title="Go Back"
               handleClick={() => state.intro = true}
@@ -142,8 +154,9 @@ const Customizer = () => {
             />
           </motion.div>
 
-          <motion.div className="filtertabs-container"
-            {...slideAnimation('up')}
+          <motion.div
+            className='filtertabs-container'
+            {...slideAnimation("up")}
           >
             {FilterTabs.map((tab) => (
               <Tab
@@ -151,7 +164,7 @@ const Customizer = () => {
                 tab={tab}
                 isFilterTab
                 isActiveTab={activeFilterTab[tab.name]}
-                handleClick={()=>handleActiveFilterTab(tab.name)}
+                handleClick={() => handleActiveFilterTab(tab.name)}
               />
             ))}
           </motion.div>
